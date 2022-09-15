@@ -14,10 +14,12 @@ const validationSchema = (req, res, next) => {
     if (_.has(Schemas, route)) {
         const schema = _.get(Schemas, route)
         const { value, error } = schema.validate(req.body, validationOptions)
-        error ? res.status(422).json({msg: error.message}) : ''
-    }
 
-    next()
+        if (error) { throw error }
+
+        req.body = value
+        next()
+    }
 }
 
 module.exports = validationSchema
