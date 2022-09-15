@@ -6,28 +6,11 @@ class UserController {
     static create = async (req, res) => {
         const { name, email, password, confirmPassword } = req.body
 
-        // validation
-        if (!name) {
-            return res.status(422).json({ msg: 'O nome é obrigatório!' })
-        }
-
-        if (!email) {
-            return res.status(422).json({ msg: 'O email é obrigatório!' })
-        }
-
-        if (!password) {
-            return res.status(422).json({ msg: 'O senha é obrigatória!' })
-        }
-
-        if (password !== confirmPassword) {
-            return res.status(422).json({ msg: "As senhas não conferem!" })
-        }
-
         // check if user exists
         const userExists = await User.findOne({ email: email })
 
         if (userExists) {
-            return res.status(422).json({ msg: "Por favor utilize outro email!" })
+             res.status(422).json({ msg: "Por favor utilize outro email!" })
         }
 
         // create password
@@ -54,7 +37,7 @@ class UserController {
         const user = await User.findById(id, '-password')
 
         if (!user) {
-            return res.status(404).json({ msg: 'Usuário não encontrado!' })
+            res.status(404).json({ msg: 'Usuário não encontrado!' })
         }
 
         res.status(200).json({ user })
@@ -64,25 +47,25 @@ class UserController {
         const { email, password } = req.body
 
         if (!email) {
-            return res.status(422).json({ msg: 'O email é obrigatório!' })
+             res.status(422).json({ msg: 'O email é obrigatório!' })
         }
 
         if (!password) {
-            return res.status(422).json({ msg: 'O senha é obrigatória!' })
+             res.status(422).json({ msg: 'O senha é obrigatória!' })
         }
 
         // check if user exists
         const user = await User.findOne({ email: email })
 
         if (!user) {
-            return res.status(404).json({ msg: "Usuário não encontrado!" })
+             res.status(404).json({ msg: "Usuário não encontrado!" })
         }
 
         //check if password match
         const checkPassword = await bcrypt.compare(password, user.password)
 
         if (!checkPassword) {
-            return res.status(404).json({ msg: "Senha Inválida" })
+             res.status(404).json({ msg: "Senha Inválida" })
         }
 
         try {

@@ -4,7 +4,7 @@ const user = require('./userRoutes')
 const routes = (app) => {
     app.route('/')
         .get((req, res) => {
-            return res.status(200).json({ msg: 'Bem vindo a nossa API!' })
+            res.status(200).json({ msg: 'Bem vindo a nossa API!' })
         })
 
     app.use(
