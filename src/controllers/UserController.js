@@ -4,13 +4,13 @@ const User = require('../models/User')
 
 class UserController {
     static create = async (req, res) => {
-        const { name, email, password, confirmPassword } = req.body
+        const { name, email, password } = req.body
 
         // check if user exists
         const userExists = await User.findOne({ email: email })
 
         if (userExists) {
-             res.status(422).json({ msg: "Por favor utilize outro email!" })
+             return res.status(422).json({ msg: "Por favor utilize outro email, pois já existe um usuário utilizando!" })
         }
 
         // create password
@@ -25,9 +25,9 @@ class UserController {
 
         try {
             await user.save()
-            res.status(201).json({ msg: 'Usuário criado com sucesso!' })
+            return res.status(201).json({ msg: 'Usuário criado com sucesso!' })
         } catch (error) {
-            res.status(500).json({ msg: 'Houve um erro no servidor, tente novamente mais tarde!' })
+            return res.status(500).json({ msg: 'Houve um erro no servidor, tente novamente mais tarde!' })
         }
     }
 
@@ -37,35 +37,35 @@ class UserController {
         const user = await User.findById(id, '-password')
 
         if (!user) {
-            res.status(404).json({ msg: 'Usuário não encontrado!' })
+            return res.status(404).json({ msg: 'Usuário não encontrado!' })
         }
 
-        res.status(200).json({ user })
+        return res.status(200).json({ user })
     }
 
     static login = async (req, res) => {
         const { email, password } = req.body
 
         if (!email) {
-             res.status(422).json({ msg: 'O email é obrigatório!' })
+             return res.status(422).json({ msg: 'O email é obrigatório!' })
         }
 
         if (!password) {
-             res.status(422).json({ msg: 'O senha é obrigatória!' })
+             return res.status(422).json({ msg: 'O senha é obrigatória!' })
         }
 
         // check if user exists
         const user = await User.findOne({ email: email })
 
         if (!user) {
-             res.status(404).json({ msg: "Usuário não encontrado!" })
+             return res.status(404).json({ msg: "Usuário não encontrado!" })
         }
 
         //check if password match
         const checkPassword = await bcrypt.compare(password, user.password)
 
         if (!checkPassword) {
-             res.status(404).json({ msg: "Senha Inválida" })
+             return res.status(404).json({ msg: "Senha Inválida" })
         }
 
         try {
@@ -77,9 +77,9 @@ class UserController {
                 SECRET,
             )
 
-            res.status(200).json({ msg: "Autenticacão realizada com sucesso", token })
+            return res.status(200).json({ msg: "Autenticacão realizada com sucesso", token })
         } catch (error) {
-            res.status(500).json({ msg: 'Houve um erro no servidor, tente novamente mais tarde!' })
+            return res.status(500).json({ msg: 'Houve um erro no servidor, tente novamente mais tarde!' })
         }
     }
 }
