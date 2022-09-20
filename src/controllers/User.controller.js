@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const User = require('../models/User')
+const User = require('../models/User.model')
 
 class UserController {
     static create = async (req, res) => {
@@ -45,14 +45,6 @@ class UserController {
 
     static login = async (req, res) => {
         const { email, password } = req.body
-
-        if (!email) {
-             return res.status(422).json({ msg: 'O email é obrigatório!' })
-        }
-
-        if (!password) {
-             return res.status(422).json({ msg: 'O senha é obrigatória!' })
-        }
 
         // check if user exists
         const user = await User.findOne({ email: email })
