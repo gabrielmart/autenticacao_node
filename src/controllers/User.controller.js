@@ -63,10 +63,7 @@ class UserController {
         try {
             const SECRET = process.env.SECRET
 
-            const token = jwt.sign({
-                id: user._id,
-            },
-                SECRET,
+            const token = jwt.sign({ id: user._id }, SECRET, { expiresIn: 900 }
             )
 
             return res.status(200).json({ msg: "Autenticacão realizada com sucesso", token })
