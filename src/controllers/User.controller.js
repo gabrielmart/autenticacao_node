@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const User = require('../models/User.model')
+const RefreshToken = require('../models/RefreshToken.model')
 
 class UserController {
     static create = async (req, res) => {
@@ -10,7 +11,7 @@ class UserController {
         const userExists = await User.findOne({ email: email })
 
         if (userExists) {
-             return res.status(422).json({ msg: "Por favor utilize outro email, pois já existe um usuário utilizando!" })
+            return res.status(422).json({ msg: "Por favor utilize outro email, pois já existe um usuário utilizando!" })
         }
 
         // create password
@@ -46,31 +47,39 @@ class UserController {
     static login = async (req, res) => {
         const { email, password } = req.body
 
-        // check if user exists
         const user = await User.findOne({ email: email })
 
-        if (!user) {
-             return res.status(404).json({ msg: "Usuário não encontrado!" })
-        }
-
-        //check if password match
         const checkPassword = await bcrypt.compare(password, user.password)
 
-        if (!checkPassword) {
-             return res.status(404).json({ msg: "Senha Inválida" })
+        if (!user || !checkPassword) {
+            return res.status(404).json({ msg: "Usuário ou Senha incorreto!" })
         }
 
-        try {
-            const SECRET = process.env.SECRET
+        const accessToken = generateAccessToken(user)
+        const refreshToken = await generateRefreshToken(user)
 
-            const token = jwt.sign({ id: user._id }, SECRET, { expiresIn: 900 }
-            )
-
-            return res.status(200).json({ msg: "Autenticacão realizada com sucesso", token })
-        } catch (error) {
-            return res.status(500).json({ msg: 'Houve um erro no servidor, tente novamente mais tarde!' })
-        }
+        return res.status(200).json({ msg: "Autenticacão realizada com sucesso", token: accessToken, refreshToken: refreshToken.token })
     }
+}
+
+const generateAccessToken = (user) => {
+    const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET
+    return jwt.sign({ id: user._id }, ACCESS_TOKEN_SECRET, { expiresIn: '15m' })
+}
+
+const generateRefreshToken = async (user) => {
+    const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET
+    const token = jwt.sign({ id: user._id }, REFRESH_TOKEN_SECRET, { expiresIn: '30d' })
+
+    const refreshToken = new RefreshToken({
+        user: user.id,
+        token,
+        expires: new Date(jwt.decode(token).exp * 1000)
+    })
+
+    await refreshToken.save()
+
+    return refreshToken
 }
 
 module.exports = UserController
