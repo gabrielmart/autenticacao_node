@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const Schema  = mongoose.Schema
+const Schema = mongoose.Schema
 
 const schema = new Schema({
     user: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -7,12 +7,21 @@ const schema = new Schema({
     expires: Date,
     created: { type: Date, default: Date.now },
     revoked: Date,
-    replacedbyToken: String
+    replacedByToken: String
+}, {
+    virtuals: {
+        isExpired: {
+            get() {
+                return Date.now() >= this.expires
+            }
+        }, 
+        isActive: {
+            get() {
+                return !this.revoked && !this.isExpired
+            }
+        }
+    }
 })
-
-schema.virtual('isExpired').get(() =>  Date.now() >= this.expires);
-
-schema.virtual('isActive').get(() => !this.revoked && !this.isExpired);
 
 schema.set('toJSON', {
     virtuals: true,
