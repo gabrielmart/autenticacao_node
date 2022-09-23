@@ -55,10 +55,40 @@ class UserController {
             return res.status(404).json({ msg: "Usuário ou Senha incorreto!" })
         }
 
-        const accessToken = generateAccessToken(user)
-        const refreshToken = await generateRefreshToken(user)
+        const oldRefreshToken = await RefreshToken.findOne({ user: user.id }).sort({ created: -1 })
 
-        return res.status(200).json({ msg: "Autenticacão realizada com sucesso", token: accessToken, refreshToken: refreshToken.token })
+        const accessToken = generateAccessToken(user)
+        const newRefreshToken = await generateRefreshToken(user)
+
+        if (oldRefreshToken && oldRefreshToken.isActive)
+            await revokeRefreshToken(oldRefreshToken, newRefreshToken)
+
+        return res.status(200).json({ msg: "Autenticacão realizada com sucesso", token: accessToken, refreshToken: newRefreshToken.token })
+    }
+
+    static refreshToken = async (req, res) => {
+        const { refreshToken: reqRefreshToken } = req.body
+
+        const oldRefreshToken = await RefreshToken.findOne({ token: reqRefreshToken }).populate('user')
+
+        if (!oldRefreshToken) return res.status(404).json({ msg: 'Refresh Token inválido!' })
+
+        if (oldRefreshToken.isExpired || !oldRefreshToken.isActive) {
+            return res.status(403).json({ msg: 'Refresh Token está inativado ou expirado!' })
+        }
+
+        const { user } = oldRefreshToken
+
+        const newRefreshToken = await generateRefreshToken(user)
+        const newAccessToken = generateAccessToken(user)
+
+        await revokeRefreshToken(oldRefreshToken, newRefreshToken)
+
+        return res.status(200).json({
+            msg: 'Access Token gerado!',
+            token: newAccessToken,
+            refreshToken: newRefreshToken.token
+        })
     }
 }
 
@@ -69,7 +99,7 @@ const generateAccessToken = (user) => {
 
 const generateRefreshToken = async (user) => {
     const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET
-    const token = jwt.sign({ id: user._id }, REFRESH_TOKEN_SECRET, { expiresIn: '30d' })
+    const token = jwt.sign({ id: user._id }, REFRESH_TOKEN_SECRET, { expiresIn: '1d' })
 
     const refreshToken = new RefreshToken({
         user: user.id,
@@ -80,6 +110,12 @@ const generateRefreshToken = async (user) => {
     await refreshToken.save()
 
     return refreshToken
+}
+
+const revokeRefreshToken = async (oldRefreshToken, newRefreshToken) => {
+    oldRefreshToken.revoked = Date.now()
+    oldRefreshToken.replacedByToken = newRefreshToken.token
+    await oldRefreshToken.save()
 }
 
 module.exports = UserController
