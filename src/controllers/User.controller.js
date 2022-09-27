@@ -1,11 +1,18 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const { checkSingle } = require('@reacherhq/api')
 const User = require('../models/User.model')
 const RefreshToken = require('../models/RefreshToken.model')
 
 class UserController {
     static create = async (req, res) => {
         const { name, email, password } = req.body
+
+        const isNotValid = await isNotEmailValid(email)
+
+        if (isNotValid) {
+            return res.status(422).json({ msg: "Email Inválido!" })
+        }
 
         // check if user exists
         const userExists = await User.findOne({ email: email })
@@ -90,6 +97,11 @@ class UserController {
             refreshToken: newRefreshToken.token
         })
     }
+}
+
+const isNotEmailValid = async (email) => {
+    const { is_reachable } = await checkSingle({ to_email: email }, { apiToken: process.env.API_TOKEN_REACHER })
+    return is_reachable !== 'safe'
 }
 
 const generateAccessToken = (user) => {
