@@ -1,9 +1,9 @@
 const validationSchema = require('./validationSchema')
-const checkToken = require('./checkToken')
+const checkAccessToken = require('./checkAccessToken')
 const { errorResponder } = require('./errorHandler')
 
 module.exports = {
     validationSchema,
-    checkToken,
+    checkAccessToken,
     errorResponder
 }
