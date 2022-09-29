@@ -1,5 +1,6 @@
 const express = require('express')
 const user = require('./user.routes')
+const auth = require('./auth.routes')
 
 const routes = (app) => {
     app.route('/')
@@ -9,6 +10,7 @@ const routes = (app) => {
 
     app.use(
         express.json(),
+        auth,
         user
     )
 }
