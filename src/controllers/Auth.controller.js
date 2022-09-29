@@ -67,6 +67,7 @@ class AuthController {
         }
 
         user.status = "Active"
+        user.confirmationCode = ''
         user.save()
 
         return res.status(200).json({ msg: "Usuário confirmado!" })
