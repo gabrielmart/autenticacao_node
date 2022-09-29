@@ -4,6 +4,6 @@ const refreshTokenSchema = require('./refreshToken.schema')
 
 module.exports = {
     '/user': userCreateSchema,
-    '/user/login': loginSchema,
-    '/user/refreshToken': refreshTokenSchema
+    '/auth/login': loginSchema,
+    '/auth/refreshToken': refreshTokenSchema
 }
