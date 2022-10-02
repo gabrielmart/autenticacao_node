@@ -8,11 +8,9 @@ const routes = (app) => {
             res.status(200).json({ msg: 'Bem vindo a nossa API!' })
         })
 
-    app.use(
-        express.json(),
-        auth,
-        user
-    )
+    app.use(express.json())
+    app.use('/auth', auth)
+    app.use('/user', user)
 }
 
 module.exports = routes 

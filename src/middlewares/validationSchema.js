@@ -9,7 +9,7 @@ const validationOptions = {
 };
 
 const validationSchema = (req, res, next) => {
-    const route = req.route.path
+    const route = req.originalUrl
 
     if (_.has(Schemas, route)) {
         const schema = _.get(Schemas, route)
