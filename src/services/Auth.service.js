@@ -6,7 +6,7 @@ const User = require('../models/User.model')
 const RefreshToken = require('../models/RefreshToken.model')
 const PasswordResetToken = require('../models/PasswordResetToken.model')
 
-class AuthController {
+class AuthService {
     static login = async (req, res) => {
         const { email, password } = req.body
 
@@ -191,4 +191,4 @@ const sendEmail = async (url, name, recipentEmail) => {
 
 }
 
-module.exports = AuthController
+module.exports = AuthService

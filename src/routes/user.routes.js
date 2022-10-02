@@ -1,6 +1,6 @@
 const express = require('express')
 
-const UserController = require('../controllers/User.controller')
+const UserController = require('../services/User.service')
 const { validationSchema, checkAccessToken } = require('../middlewares')
 
 const router = express.Router()

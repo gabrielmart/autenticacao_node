@@ -4,7 +4,7 @@ const { checkSingle } = require('@reacherhq/api')
 const nodemailer = require('nodemailer')
 const User = require('../models/User.model')
 
-class UserController {
+class UserService {
     static create = async (req, res) => {
         const { name, email, password } = req.body
 
@@ -102,4 +102,4 @@ const sendEmail = async (url, name, recipentEmail) => {
 
 }
 
-module.exports = UserController
+module.exports = UserService
