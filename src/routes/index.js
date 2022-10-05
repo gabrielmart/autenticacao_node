@@ -6,7 +6,11 @@ const NotFoundError = require('../errors/NotFound.error')
 const routes = (app) => {
     app.route('/')
         .get((req, res) => {
-            res.status(200).json({ msg: 'Bem vindo a nossa API!' })
+            setTimeout(() => {
+                throw new Error('teste')
+            }, 500);
+
+            // res.status(200).json({ msg: 'Bem vindo a nossa API!' })
         })
 
     app.use(express.json())
