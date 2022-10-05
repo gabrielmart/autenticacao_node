@@ -1,5 +1,7 @@
 const _ = require('lodash')
+const StatusCode = require('http-status-codes')
 const Schemas = require('../schemas')
+const BadRequestError = require('../errors/BadRequest.error')
 
 // Joi validation options
 const validationOptions = {
@@ -15,7 +17,7 @@ const validationSchema = (req, res, next) => {
         const schema = _.get(Schemas, route)
         const { value, error } = schema.validate(req.body, validationOptions)
 
-        if (error) { throw error }
+        if (!!error) throw new BadRequestError([...error.details])
 
         req.body = value
         next()
