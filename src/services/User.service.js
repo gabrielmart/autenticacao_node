@@ -34,14 +34,11 @@ class UserService {
 
         const urlEmailConfirmation = generateUrlEmailConfirmation(req, confirmationCode)
 
-        try {
-            await user.save()
-            await sendEmail(urlEmailConfirmation, name, email)
+        await user.save()
+        await sendEmail(urlEmailConfirmation, name, email)
 
-            return res.status(201).json({ msg: 'Usuário criado com sucesso, por favor verifique seu email!' })
-        } catch (error) {
-            return res.status(500).json({ msg: 'Houve um erro no servidor, tente novamente mais tarde!' })
-        }
+        return res.status(201).json({ msg: 'Usuário criado com sucesso, por favor verifique seu email!' })
+
     }
 
     static readById = async (req, res) => {
