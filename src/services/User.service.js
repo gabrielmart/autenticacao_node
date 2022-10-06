@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken')
 const { checkSingle } = require('@reacherhq/api')
 const nodemailer = require('nodemailer')
 const User = require('../models/User.model')
+const UnauthorizedError = require('../errors/Unauthorized.error')
 
 class UserService {
     static create = async (req, res) => {
@@ -11,13 +12,13 @@ class UserService {
         const isNotValid = await isNotEmailValid(email)
 
         if (isNotValid) {
-            return res.status(422).json({ msg: "Email Inválido!" })
+            throw new UnauthorizedError("Email Inválido!")
         }
 
         const userExists = await User.findOne({ email: email })
 
         if (userExists) {
-            return res.status(422).json({ msg: "Por favor utilize outro email, pois já existe um usuário utilizando!" })
+            throw new UnauthorizedError("Por favor utilize outro email, pois já existe um usuário utilizando!")
         }
 
         const salt = await bcrypt.genSalt(12)
@@ -47,7 +48,7 @@ class UserService {
         const user = await User.findById(id, '-password')
 
         if (!user) {
-            return res.status(404).json({ msg: 'Usuário não encontrado!' })
+            throw new NotFoundError('Usuário não encontrado!')
         }
 
         return res.status(200).json({ user })

@@ -5,6 +5,9 @@ const nodemailer = require('nodemailer')
 const User = require('../models/User.model')
 const RefreshToken = require('../models/RefreshToken.model')
 const PasswordResetToken = require('../models/PasswordResetToken.model')
+const UnauthorizedError = require('../errors/Unauthorized.error')
+const ForbiddenError = require('../errors/Forbidden.error')
+const UnprocessableEntity = require('../errors/UnprocessableEntity.error')
 
 class AuthService {
     static login = async (req, res) => {
@@ -15,11 +18,11 @@ class AuthService {
         const checkPassword = await bcrypt.compare(password, user.password)
 
         if (!user || !checkPassword) {
-            return res.status(404).json({ msg: "Usuário ou Senha incorreto!" })
+            throw new UnauthorizedError("Usuário ou Senha incorreto!")
         }
 
         if (user.status != 'Active') {
-            return res.status(403).json({ msg: "Conta pendente de confirmação. Por favor verifique seu email!" })
+            throw new ForbiddenError("Conta pendente de confirmação. Por favor verifique seu email!")
         }
 
         const oldRefreshToken = await RefreshToken.findOne({ user: user.id }).sort({ created: -1 })
@@ -38,10 +41,10 @@ class AuthService {
 
         const oldRefreshToken = await RefreshToken.findOne({ token: reqRefreshToken }).populate('user')
 
-        if (!oldRefreshToken) return res.status(404).json({ msg: 'Refresh Token inválido!' })
+        if (!oldRefreshToken) throw new UnauthorizedError('Refresh Token inválido!')
 
         if (oldRefreshToken.isExpired || !oldRefreshToken.isActive) {
-            return res.status(403).json({ msg: 'Refresh Token está inativado ou expirado!' })
+            throw new ForbiddenError('Refresh Token está inativado ou expirado!')
         }
 
         const { user } = oldRefreshToken
@@ -61,12 +64,10 @@ class AuthService {
     static confirmationEmail = async (req, res) => {
         const { confirmationCode } = req.params
 
-        const user = await User.findOne({
-            confirmationCode
-        })
+        const user = await User.findOne({ confirmationCode })
 
         if (!user || user.status === "Active") {
-            return res.status(400).json({ msg: "Requisição Invalida!" })
+            throw new UnprocessableEntity('Requisição Inválida!')
         }
 
         user.status = "Active"
@@ -80,12 +81,12 @@ class AuthService {
         const { email } = req.body
         const user = await User.findOne({ email })
 
-        if(!user) {
-            return res.status(400).json({ msg: 'Não existe usuário com esse email!'})
+        if (!user) {
+            throw new UnprocessableEntity('Não existe usuário com esse email!')
         }
 
         const passwordResetToken = await generatePasswordResetToken(user)
-        
+
         const urlPasswordReset = generateUrlpasswordReset(req, user, passwordResetToken)
 
         await sendEmail(urlPasswordReset, user.name, user.email)
@@ -98,10 +99,10 @@ class AuthService {
         const { password } = req.body
 
         const user = await User.findById(userId)
-        const token = await PasswordResetToken.findOne({ token: passwordResettoken})
+        const token = await PasswordResetToken.findOne({ token: passwordResettoken })
 
-        if(!user || !token) {
-            return res.status(400).json({ msg: 'Url invalida!'})
+        if (!user || !token) {
+            throw new UnprocessableEntity('Url invalida!')
         }
 
         const salt = await bcrypt.genSalt(12)
@@ -112,7 +113,7 @@ class AuthService {
         await user.save()
         await token.delete()
 
-        res.status(200).json({ msg: 'Senha recuperada com sucesso!'})
+        res.status(200).json({ msg: 'Senha recuperada com sucesso!' })
     }
 }
 

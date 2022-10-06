@@ -1,10 +1,10 @@
 const ApiError = require("./Api.error");
 const StatusCode = require('http-status-codes')
 
-class NotFoundError extends ApiError {
+class UnauthorizedError extends ApiError {
     constructor(message) {
-        super(StatusCode.NOT_FOUND, message)
+        super(StatusCode.UNAUTHORIZED, message)
     }
 }
 
-module.exports = NotFoundError
+module.exports = UnauthorizedError
